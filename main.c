@@ -20,13 +20,24 @@ int main(){
     //creamos el jardin
     int **jardin=crearJardin(filas, columnas);
 
-    int soles=150;
+    int soles=200;
+    printf("El juego comenzo\n");
     int girasolComprado=0;
 
     int filaPlanta=-1;
     int columnaPlanta=-1;
 
-    int tipoPlanta=comprarPlanta(jardin, filas, columnas, &soles, &girasolComprado,&filaPlanta, &columnaPlanta);
+    //preguntamos si queremos seguir comprando plantas
+    int seguirComprando=1;
+
+    while(seguirComprando==1){
+    printf("Entrando a la tienda\n");
+        //compramos y colocamos una planta 
+    comprarPlanta(jardin, filas, columnas, &soles,&girasolComprado, &filaPlanta, &columnaPlanta);
+        //preguntamos si queremos comprar otrea planta
+        printf("\nQuieres comprar otra planta? (1:SI/0:NO): ");
+        scanf("%d", &seguirComprando);
+    }
 
     int fila;
 
