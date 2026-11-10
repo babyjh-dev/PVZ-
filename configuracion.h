@@ -1,3 +1,0 @@
-int hola;
-ierdlñkf
-sladl
