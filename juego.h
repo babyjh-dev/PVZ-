@@ -1,6 +1,10 @@
 #ifndef juego_h
 #define juego_h
 
-void actualizarTurno(int**jardin, int fila,int filaPlanta, int*columnaZombie, int columnaPlanta,int *vidaZombie,int *contadorAtaque, int *soles,  int girasolComprado, int *contadorGirasoles, int *juegoterminado);
+#include "zombies.h"
+
+//actualizamos los tuenos del juego 
+void actualizarTurno(int**jardin, Zombie zombies[], int cantidadZombies, int *soles, int *contadorGirasoles, int *juegoTerminado);
+//jardin matriz 5x9, zombies[]contiene los datos dde todos los zombies, cantidad de zombiess, soles cantiad de soles disponibles
 
 #endif
