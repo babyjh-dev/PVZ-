@@ -1,67 +1,98 @@
 #include <stdio.h>
 #include "juego.h"
 #include "zombies.h"
-void actualizarTurno(int**jardin, int fila,int filaPlanta, int*columnaZombie, int columnaPlanta,int *vidaZombie,int *contadorAtaque, int *soles, int girasolComprado, int *contadorGirasoles, int *juegoTerminado){
+void actualizarTurno(int**jardin, Zombie zombies[], int cantidadZombies, int *soles, int *contadorGirasoles, int *juegoTerminado){
 
-            // verificamos si compramos un girasol
-            if(girasolComprado==1){
+        //contamos los girasoles que hay en el jardin
+        int cantidadGirasoles=0;
 
-                // contamos los turnos para generar soles
-                (*contadorGirasoles)++;
-
-                if(*contadorGirasoles==2){
-
-                    // agregamos 50 soles
-                    *soles=*soles+50;
-
-                    printf("El girasol genero 50 soles!\n");
-                    printf("Cantidad de soles: %d\n",*soles);
-
-                    // reiniciamos el contador
-                    *contadorGirasoles=0;
-                }
-            }
-
-            // contamos los turnos para que la planta ataque
-            (*contadorAtaque)++;
-
-            if(*contadorAtaque==2 && *columnaZombie>0){
-
-                // verificamos si hay un lanzaguisantes en la fila del zombie
-                if(columnaPlanta>0 && columnaPlanta>=0 && jardin[fila][columnaPlanta]==1&& filaPlanta==fila){
-                    // le quitamos vida al zombie
-                    (*vidaZombie)--;
-
-                    printf("La planta ataca! Vida del zombie: %d\n", *vidaZombie);
-                }
-
-                // reiniciamos el contador de ataque
-                *contadorAtaque=0;
-            }
-
-            // verificamos si el zombie fue derrotado
-            if(*vidaZombie<=0){
-
-                // eliminamos el zombie de la matriz
-                jardin[fila][*columnaZombie]=0;
-
-                printf("El zombie fue derrotado. Ganaste!");
-
-                // indicamos que el juego termino
-                *juegoTerminado=1;
-            }
-            else{
-
-                // movemos el zombie una posicion
-                moverZombie(jardin, fila, columnaZombie);
-
-                // verificamos si el zombie llego a la casa
-                if(*columnaZombie==0){
-
-                    printf("El zombie llego a la casa. Perdiste!");
-
-                    // indicamos que el juego termino
-                    *juegoTerminado=1;
+        for(int i=0; i<5; i++){
+            for(int j=0; j<9; j++){
+                if(jardin[i][j]==2){
+                    cantidadGirasoles++;
                 }
             }
         }
+        //contamos los turnos para generar soles
+        (*contadorGirasoles)++;
+        if(*contadorGirasoles==2 && cantidadGirasoles>0){
+            //agregamos 50 soles por cada girasol
+            *soles=*soles+(50*cantidadGirasoles);
+
+            printf("Los girasoles generaron %d soles\n", 50*cantidadGirasoles);
+            printf("cantidad de soles: %d\n", *soles);
+
+            //reiniciamos el contador
+            *contadorGirasoles=0;
+        }
+            //recorremos todos los zombies
+            for(int i=0; i<cantidadZombies; i++){
+
+                //verificamos si el zombie esta activo
+                if(zombies[i].activo==1){
+
+                    //contamos los turnos para que las plantas ataquen
+                    zombies[i].contadorAtaque++;
+
+                    if(zombies[i].contadorAtaque==2){
+
+                        //recorremos la fila donde esta el zombie
+                        for(int j=0; j<zombies[i].columna; j++){
+
+                            //verificamos si hay lanzaguisantes
+                            if(jardin[zombies[i].fila][j]==1){
+
+                                //le quitamos vida al zombie
+                                zombies[i].vida--;
+
+                                printf("Zombie %d recibe un ataque. Vida %d\n", i+1, zombies[i].vida);
+
+                                //verificamos si fue derrotado
+                                if(zombies[i].vida<=0){
+                                    break;
+                                }
+                            }
+                        }
+
+                        //reiniciamos el contador de ataque
+                        zombies[i].contadorAtaque=0;
+                    }
+                    //verificamos si el zombies fue derrotado 
+                    if(zombies[i].vida<=0){
+
+                        //eliminamos al zombie de la matriz
+                        jardin[zombies[i].fila][zombies[i].columna]=0;
+
+                        //inicamos que ya no este activo
+                        zombies[i].activo=0;
+
+                        printf("Zombie %d fue derrotado\n",  i+1);
+                    }
+                    else{
+
+                        //verificamos si llego a la casa
+                        if(zombies[i].columna==0){
+                            printf("Zombie %d llego a la casa, Perdiste :(\n", i+1);
+
+                            *juegoTerminado=1;
+                            return;
+                        }
+                        //movemos el zombie una posicion
+                        moverZombie(jardin, &zombies[i]);
+                    }
+                }
+            }
+            //contamos cuantos zombies siguen activos
+            int zombiesActivos=0;
+
+            for(int i=0; i<cantidadZombies; i++){
+                if(zombies[i].activo==1){
+                    zombiesActivos++;
+                }
+            }
+            //verificamos si derrotamos a todos los zombies
+            if(zombiesActivos==0){
+                printf("derrotaste a todos los zombies. Ganaste :) \n");
+                *juegoTerminado=1;
+            }
+         }
