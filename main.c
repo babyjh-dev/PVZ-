@@ -38,23 +38,43 @@ int main(){
         printf("\nQuieres comprar otra planta? (1:SI/0:NO): ");
         scanf("%d", &seguirComprando);
     }
+    //guardamos los datos de los zombies
+    Zombie zombies[MAX_ZOMBIES];
 
-    int fila;
+    int cantidadZombies=3;
 
-    // pedimos la fila donde aparecera el zombie
-    printf("Ingrese la fila donde aparecera el zombie (0 a 4): ");
-    scanf("%d", &fila);
+    //colocamos los zombies en el jardin
+    for(int i =0; i<cantidadZombies; i++){
+        //pedimos la fila el zombie
+        printf("ingrese la fila del zombie %d (0 a 4): ", i+1);
+        scanf("%d", &zombies[i].fila);
 
-    // definimos la posicion del zombie
-    int columnaZombie=8;
+        //verificamos que la fila sea valida y que no este ocupada
+        while(zombies[i].fila<0 || zombies[i].fila>=filas || jardin[zombies[i].fila][8]!=0){
+            printf("esa fila no esta disponible,  ingrese otra: ");
+            scanf("%d" , &zombies[i].fila);
+        }
 
-    // colocamos el zombie en la matriz
-    colocarZombie(jardin, fila, columnaZombie);
+        //definimos la posicion inicial
+        zombies[i].columna=8;
 
+        //definimos la vida del zombie
+        zombies[i].vida=3;
 
-    int vidaZombie=3;
+        //indicamos que esta activo
+        zombies[i].activo=1;
+
+        //iniciamos el contador de ataque
+        zombies[i].contadorAtaque=0;
+
+        //iniciamos el contador de comer plantas
+        zombies[i].contadorComida=0;
+
+        //colocamos el zombie en la matriz
+        colocarZombie(jardin, zombies[i].fila, zombies[i].columna);
+    }
+
     int turno=1;
-    int contadorAtaque=0;
     int contadorGirasoles=0;
 
     // definimos si el juego termino
@@ -72,7 +92,7 @@ int main(){
             printf("\nTurno %d:\n", turno);
 
             //actualizamos el turno del juego
-            actualizarTurno(jardin, fila, filaPlanta, &columnaZombie, columnaPlanta, &vidaZombie, &contadorAtaque, &soles, girasolComprado, &contadorGirasoles, &juegoTerminado);
+            actualizarTurno(jardin, zombies, cantidadZombies, &soles, &contadorGirasoles, &juegoTerminado);
 
             // imprimimos la matriz actualizada
             imprimirMatriz(jardin, filas, columnas);
