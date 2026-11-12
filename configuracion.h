@@ -1,6 +1,6 @@
 
-#ifndef CONFIGURACION_H
-#define CONFIGURACION_H
+#ifndef configuracion_h
+#define configuracion_h
 
 #include "estructuras.h"
 
