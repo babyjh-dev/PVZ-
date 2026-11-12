@@ -1,6 +1,6 @@
 
-#ifndef ESTRUCTURAS_H
-#define ESTRUCTURAS_H
+#ifndef estructuras_h
+#define estructuras_h
 
 /* Tipos de plantas disponibles */
 typedef enum {
