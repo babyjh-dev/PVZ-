@@ -11,16 +11,20 @@
 
 int main(){
     srand(time(NULL));//iniciamos los numeros aleatorios
+    
+    // variables del jardin
+    int filas = 0;
+    int columnas = 0;
+    int **jardin = NULL;
 
+    // cargamos el jardin desde el archivo
+    if(!leerJardin("jardin.txt", &jardin, &filas, &columnas)){
+        printf("Error al cargar el jardin.\n");
+        return 1;
+    }
     // abrimos la ventana del juego
     InitWindow(900, 600, "Plants vs Zombies");
     SetTargetFPS(60);
-
-    int filas=5;
-    int columnas=9;
-
-    //creamos el jardin
-    int **jardin=crearJardin(filas, columnas);
 
     int soles=200;
     printf("El juego comenzo\n");
@@ -125,6 +129,8 @@ int main(){
 
     // liberamos la memoria de la matriz
     liberarJardin(jardin, filas);
-
+    
+    jardin = NULL;
+    
     return 0;
 }
