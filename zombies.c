@@ -7,6 +7,20 @@ void colocarZombie(int**jardin, int fila, int columna){
 }
 // movemos el zombie
 void moverZombie(int **jardin, Zombie *zombie){
+    //definimos la velocidad del zombie
+    int velocidad=2;
+
+    //el abanderaddo avanza mas rapido
+    if(zombie->tipoZombie==1){
+        velocidad=1;
+    }
+    //contamos los turnos de movimiento
+    zombie->contadorMovimiento++;
+
+    if(zombie->contadorMovimiento<velocidad){
+        return;
+    }
+    zombie->contadorMovimiento=0;
 
     // verificamos que el zombie este activo y pueda avanzar
     if(zombie->activo==1 && zombie->columna>0){
@@ -57,5 +71,21 @@ void moverZombie(int **jardin, Zombie *zombie){
             // reiniciamos el contador de comida
             zombie->contadorComida=0;
         }
+    }
+}
+void activarCortacesped(int**jardin, int fila, int *cortacesped){
+
+    //verificamos si el cortacesped esta disponible
+    if(*cortacesped==1){
+        printf("el cortacesped de la fila %d se activo \n", fila+1);
+
+        //eliminamos los zombies de esa fila
+        for(int j=0; j<9; j++){
+            if(jardin[fila][j]==4){
+                jardin[fila][j]=0;
+            }
+        }
+        //indicamos que ya fue usado
+        *cortacesped=0;
     }
 }
