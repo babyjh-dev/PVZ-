@@ -26,7 +26,8 @@ typedef enum {
     CELDA_GIRASOL = 2,
     CELDA_NUEZ = 3,
     CELDA_ZOMBIE = 4
-    /*lo dejo como comentario porque aun no esta acorde al resto del codigo*/
+
+    /* Se dejan pendientes hasta coordinar su implementación */
     /* CELDA_ZOMBIE_BANDERA = 5, */
     /* CELDA_OBSTACULO = 6 */
 } TipoCelda;
@@ -70,21 +71,30 @@ typedef struct {
 } Tablero;
 
 
-/* Todos los parametros que sea necesario ir agregando deacuerdo al avance de nuestro codigo */
+/* Parámetros generales y configuración inicial del juego */
 typedef struct {
     Tablero tablero;
 
-    int cantidadOleadas;
+    /* Recursos y tiempos generales */
     int solesIniciales;
     float frecuenciaBaseSoles;
     float tiempoPreparacion;
+    float tiempoDescanso;
 
+    /* Configuración de las oleadas */
+    int cantidadOleadas;
+    int zombiesPrimeraOleada;
+    int incrementoZombies;
+
+    /* Información de las plantas */
     Planta *plantas;
     int cantidadPlantas;
 
+    /* Información de los zombies */
     Zombie *zombies;
     int cantidadZombies;
 
 } Configuracion;
 
 #endif
+
