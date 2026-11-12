@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "juego.h"
 #include "zombies.h"
-void actualizarTurno(int**jardin, Zombie zombies[], int cantidadZombies, int *soles, int *contadorGirasoles, int *juegoTerminado){
+void actualizarTurno(int**jardin, Zombie zombies[], int cantidadZombies, int *soles, int *contadorGirasoles, int *juegoTerminado, int cortaCesped[]){
 
         //contamos los girasoles que hay en el jardin
         int cantidadGirasoles=0;
@@ -72,14 +72,26 @@ void actualizarTurno(int**jardin, Zombie zombies[], int cantidadZombies, int *so
 
                         //verificamos si llego a la casa
                         if(zombies[i].columna==0){
-                            printf("Zombie %d llego a la casa, Perdiste :(\n", i+1);
-
-                            *juegoTerminado=1;
-                            return;
+                            //verificamos si el cortacesped esta ddisponible
+                            if(cortaCesped[zombies[i].fila]==0){
+                                printf("un zombie llego a la casa. Perdiste:(\n");
+                                *juegoTerminado=1;
+                                return;
+                            }
+                            //activamos el cortacesped de su fila
+                            activarCortacesped(jardin, zombies[i].fila, &cortaCesped[zombies[i].fila]);
+                            //eliminamos todos los zombies de la fila
+                            for(int j=0; j<cantidadZombies; j++){
+                                if(zombies[j].activo==1 && zombies[j].fila==zombies[i].fila){
+                            //eliminamos el zombie que activo el cortacesped
+                            zombies[j].activo=0;
+                            }
                         }
+                        //pasamos al siguiente zombie
+                         continue;
+                    }
                         //movemos el zombie una posicion
                         moverZombie(jardin, &zombies[i]);
-                    }
                 }
             }
             //contamos cuantos zombies siguen activos
@@ -96,3 +108,4 @@ void actualizarTurno(int**jardin, Zombie zombies[], int cantidadZombies, int *so
                 *juegoTerminado=1;
             }
          }
+}
