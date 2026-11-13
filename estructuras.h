@@ -57,8 +57,18 @@ typedef struct {
 
     float velocidad;
     float frecuenciaAtaque;
-} Zombie;
+} ZombieConfig;
 
+typedef struct {
+    int fila;
+    int columna;
+    int vida;
+    int activo;
+    int contadorAtaque;
+    int contadorComida;
+    int tipoZombie;
+    int contadorMovimiento;
+} Zombie;
 
 /* Información del tablero y su matriz */
 typedef struct {
@@ -91,10 +101,9 @@ typedef struct {
     int cantidadPlantas;
 
     /* Información de los zombies */
-    Zombie *zombies;
+    ZombieConfig*zombies;
     int cantidadZombies;
 
 } Configuracion;
 
 #endif
-
