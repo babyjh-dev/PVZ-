@@ -165,7 +165,7 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
 
     /* Reservamos memoria para los zombies */
     if ((size_t)config->cantidadZombies >
-        SIZE_MAX / sizeof(Zombie)) {
+        SIZE_MAX / sizeof(ZombieConfig)) {
         goto error;
     }
 
