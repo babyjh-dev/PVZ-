@@ -2,7 +2,7 @@
 #include <stdlib.h> //para usar malloc y free
 #include <raylib.h> //para la visual
 #include <time.h> //para usar time
-
+#include "configuracion.h"
 #include "jardin.h"
 #include "plantas.h"
 #include "zombies.h"
@@ -11,17 +11,18 @@
 
 int main(){
     srand(time(NULL));//iniciamos los numeros aleatorios
-    
-    // variables del jardin
-    int filas = 0;
-    int columnas = 0;
-    int **jardin = NULL;
+    //cargamos la configuracion del juego
+    Configuracion config={0};
 
-    // cargamos el jardin desde el archivo
-    if(!leerJardin("jardin.txt", &jardin, &filas, &columnas)){
-        printf("Error al cargar el jardin.\n");
+    if(cargarConfiguracion(&config, "configuracion.txt")==0){
+        printf("error al cargar la configuracion\n");
         return 1;
     }
+    
+    int filas = config.tablero.filas;
+    int columnas = config.tablero.columnas;
+
+    int **jardin = crearJardin(filas, columnas);
     // abrimos la ventana del juego
     InitWindow(900, 600, "Plants vs Zombies");
     SetTargetFPS(60);
@@ -48,50 +49,13 @@ int main(){
     Zombie zombies[MAX_ZOMBIES];
     printf("sali de la tienda correctamente\n");
 
-    int cantidadZombies=rand()%3+1;
-        printf("Cantidad de zombies: %d\n", cantidadZombies);
+    int cantidadZombies=0;
+    int oleadaActual=1;
+    int zombiesPorOleada=5;
+    generarOleadas(jardin, zombies, &cantidadZombies, zombiesPorOleada, filas);
+    printf("Zombies creados: %d\n", cantidadZombies);
     //creamos un cortacesped para cada fila y cuando se utilice cambia a 0
     int cortacesped[5]={1,1,1,1,1};
-
-    //colocamos los zombies en el jardin
-    for(int i =0; i<cantidadZombies; i++){
-        //elegimos una fila aleatoria
-        zombies[i].fila=rand()%filas;
-        printf("Fila elegida: %d\n", zombies[i].fila);
-        printf("Valor de la casilla: %d\n", jardin[zombies[i].fila][8]);
-
-        //verificamos si la fila no esta ocupadda
-        while(jardin[zombies[i].fila][8]!=0){
-            printf("Fila ocupada, buscando otra...\n");
-            zombies[i].fila=rand()%filas;
-        }
-        printf("Fila disponible encontrada\n");
-
-        //definimos la posicion inicial
-        zombies[i].columna=8;
-
-        //definimos la vida del zombie
-        zombies[i].vida=3;
-
-        //indicamos que esta activo
-        zombies[i].activo=1;
-
-        //iniciamos el contador de ataque
-        zombies[i].contadorAtaque=0;
-
-        //iniciamos el contador de comer plantas
-        zombies[i].contadorComida=0;
-
-        zombies[i].contadorMovimiento=0;
-        //elegimos aleatoriamente el tipo
-        zombies[i].tipoZombie=rand()%2;
-        printf("Zombie %d - Tipo: %d\n", i, zombies[i].tipoZombie);
-
-        //colocamos el zombie en la matriz
-        colocarZombie(jardin, zombies[i].fila, zombies[i].columna);
-        printf("Zombie colocado correctamente\n");
-    }
-
     int turno=1;
     int contadorGirasoles=0;
 
@@ -112,7 +76,37 @@ int main(){
 
             //actualizamos el turno del juego
             actualizarTurno(jardin, zombies, cantidadZombies, &soles, &contadorGirasoles, &juegoTerminado, cortacesped);
+            // contamos los zombies que siguen activos
+    int zombiesActivos=0;
 
+    for(int i=0; i<cantidadZombies; i++){
+        if(zombies[i].activo==1){
+            zombiesActivos++;
+            printf("Zombies activos: %d\n", zombiesActivos);
+        }
+    }
+
+    // verificamos si termino la oleada
+    if(zombiesActivos==0 && juegoTerminado==0){
+
+        if(oleadaActual<5){
+            oleadaActual++;
+
+        zombiesPorOleada=oleadaActual*5;
+
+        // reiniciamos la cantidad de zombies
+        cantidadZombies=0;
+
+        // generamos la siguiente oleada
+        generarOleadas(jardin, zombies, &cantidadZombies, zombiesPorOleada, filas);
+        printf("Comienza la oleada %d con %d zombies\n", oleadaActual, zombiesPorOleada);
+
+    } else {
+
+        printf("FELICIDADES! GANASTE EL JUEGO\n");
+        juegoTerminado=1;
+    }
+}
             // imprimimos la matriz actualizada
             imprimirMatriz(jardin, filas, columnas);
 
