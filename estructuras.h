@@ -57,7 +57,7 @@ typedef struct {
 
     float velocidad;
     float frecuenciaAtaque;
-} ZombieConfig;
+} Zombie;
 
 
 /* Información del tablero y su matriz */
