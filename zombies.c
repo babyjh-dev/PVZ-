@@ -21,29 +21,36 @@ void inicializarZombie(Zombie *zombie, int fila, int columna){
     zombie->tipoZombie=rand()%2;
 }
 // generamos los zombies de una oleada
-void generarOleadas(int **jardin, Zombie zombies[], int *cantidadZombies, int cantidadNueva, int filas){
+void generarOleadas(int **jardin, Zombie zombies[], int *cantidadZombies, int cantidadNueva, int filas, int columnas) {
 
     int fila;
     int columna;
 
-    for(int i=0; i<cantidadNueva; i++){
-        // buscamos una posicion disponible
-        fila=rand()%filas;
-        columna=8;
-        // si la casilla esta ocupada, buscamos otra columna
-        while(jardin[fila][columna]!=0){
+    for (int i = 0; i < cantidadNueva; i++) {
+
+        // Buscamos una posicion disponible
+        fila = rand() % filas;
+        columna = columnas - 1;
+
+        // Si la casilla esta ocupada, buscamos otra columna
+        while (jardin[fila][columna] != 0) {
+
             columna--;
-            // si llegamos al inicio, volvemos a la ultima columna
-            if(columna<0){
-                columna=8;
-                fila=(fila+1)%filas;
+
+            // Si llegamos al inicio, buscamos otra fila
+            if (columna < 0) {
+                columna = columnas - 1;
+                fila = (fila + 1) % filas;
             }
         }
-        // inicializamos el zombie
+
+        // Inicializamos el zombie
         inicializarZombie(&zombies[*cantidadZombies], fila, columna);
-        // lo colocamos en el jardin
+
+        // Lo colocamos en el jardin
         colocarZombie(jardin, fila, columna);
-        // aumentamos la cantidad de zombies
+
+        // Aumentamos la cantidad de zombies
         (*cantidadZombies)++;
     }
 }
