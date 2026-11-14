@@ -1,10 +1,53 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "zombies.h"
 
 //colocamos el zombie en el jardin
 void colocarZombie(int**jardin, int fila, int columna){
     jardin[fila][columna]=4;
 }
+// inicializamos los datos de un zombie
+void inicializarZombie(Zombie *zombie, int fila, int columna){
+
+    zombie->fila=fila;
+    zombie->columna=columna;
+    zombie->vida=3;
+    zombie->activo=1;
+    zombie->contadorAtaque=0;
+    zombie->contadorComida=0;
+    zombie->contadorMovimiento=0;
+
+    // elegimos aleatoriamente el tipo
+    zombie->tipoZombie=rand()%2;
+}
+// generamos los zombies de una oleada
+void generarOleadas(int **jardin, Zombie zombies[], int *cantidadZombies, int cantidadNueva, int filas){
+
+    int fila;
+    int columna;
+
+    for(int i=0; i<cantidadNueva; i++){
+        // buscamos una posicion disponible
+        fila=rand()%filas;
+        columna=8;
+        // si la casilla esta ocupada, buscamos otra columna
+        while(jardin[fila][columna]!=0){
+            columna--;
+            // si llegamos al inicio, volvemos a la ultima columna
+            if(columna<0){
+                columna=8;
+                fila=(fila+1)%filas;
+            }
+        }
+        // inicializamos el zombie
+        inicializarZombie(&zombies[*cantidadZombies], fila, columna);
+        // lo colocamos en el jardin
+        colocarZombie(jardin, fila, columna);
+        // aumentamos la cantidad de zombies
+        (*cantidadZombies)++;
+    }
+}
+
 // movemos el zombie
 void moverZombie(int **jardin, Zombie *zombie){
     //definimos la velocidad del zombie
@@ -57,18 +100,14 @@ void moverZombie(int **jardin, Zombie *zombie){
                 zombie->contadorComida=0;
             }
         }
-        else{
-
-            // borramos la posicion anterior
+        else if(jardin[zombie->fila][siguienteColumna]==4){
+            //si hay otro zombie adelante, esperamos 
+            return;
+        }
+        else {
             jardin[zombie->fila][zombie->columna]=0;
-
-            // avanzamos una columna
             zombie->columna--;
-
-            // colocamos el zombie en su nueva posicion
             jardin[zombie->fila][zombie->columna]=4;
-
-            // reiniciamos el contador de comida
             zombie->contadorComida=0;
         }
     }
