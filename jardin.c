@@ -26,16 +26,18 @@ int **crearJardin(int filas, int columnas){
 }
 
 int leerJardin(const char *nombreArchivo, int ***jardin, int *filas, int *columnas) {
-
-    FILE *archivo = fopen(nombreArchivo, "r");
-
-    if (archivo == NULL) {
+    
+    if (nombreArchivo == NULL || jardin == NULL ||
+        filas == NULL || columnas == NULL) {
         return 0;
+    
     }
-
+    
     *jardin = NULL;
     *filas = 0;
     *columnas = 0;
+
+    FILE *archivo = fopen(nombreArchivo, "r");
 
     // Leemos las dimensiones del jardin
     if (fscanf(archivo, "%d %d", filas, columnas) != 2 ||
