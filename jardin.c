@@ -9,16 +9,40 @@
 // creamos la matriz dinamica
 int **crearJardin(int filas, int columnas){
 
-    int **jardin=malloc(filas*sizeof(int *));
-
-    for(int i=0; i<filas; i++){
-        jardin[i]=malloc(columnas*sizeof(int));
+    // Validamos las dimensiones
+    if(filas <= 0 || columnas <= 0){
+        return NULL;
     }
 
-    // rellenamos la matriz con 0
-    for(int i=0; i<filas; i++){
-        for(int j=0; j<columnas; j++){
-            jardin[i][j]=0;
+    // Reservamos memoria para los punteros de las filas
+    int **jardin = malloc(filas * sizeof(int *));
+
+    if(jardin == NULL){
+        return NULL;
+    }
+
+    // Reservamos memoria para cada fila
+    for(int i = 0; i < filas; i++){
+
+        jardin[i] = malloc(columnas * sizeof(int));
+
+        // Si falla una reserva, liberamos lo anterior
+        if(jardin[i] == NULL){
+
+            for(int j = 0; j < i; j++){
+                free(jardin[j]);
+            }
+
+            free(jardin);
+
+            return NULL;
+        }
+    }
+
+    // Inicializamos todas las casillas en 0
+    for(int i = 0; i < filas; i++){
+        for(int j = 0; j < columnas; j++){
+            jardin[i][j] = 0;
         }
     }
 
