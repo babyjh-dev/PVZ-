@@ -25,6 +25,86 @@ int **crearJardin(int filas, int columnas){
     return jardin;
 }
 
+int leerJardin(const char *nombreArchivo, int ***jardin, int *filas, int *columnas) {
+
+    FILE *archivo = fopen(nombreArchivo, "r");
+
+    if (archivo == NULL) {
+        return 0;
+    }
+
+    *jardin = NULL;
+    *filas = 0;
+    *columnas = 0;
+
+    // Leemos las dimensiones del jardin
+    if (fscanf(archivo, "%d %d", filas, columnas) != 2 ||
+        *filas <= 0 || *columnas <= 0) {
+
+        fclose(archivo);
+        return 0;
+    }
+
+    // Creamos la matriz dinamicamente
+    int **matriz = crearJardin(*filas, *columnas);
+
+    if (matriz == NULL) {
+        fclose(archivo);
+        *filas = 0;
+        *columnas = 0;
+        return 0;
+    }
+
+    // Leemos los valores de cada casilla
+    for (int i = 0; i < *filas; i++) {
+        for (int j = 0; j < *columnas; j++) {
+
+            if (fscanf(archivo, "%d", &matriz[i][j]) != 1) {
+                liberarJardin(matriz, *filas);
+                fclose(archivo);
+
+                *jardin = NULL;
+                *filas = 0;
+                *columnas = 0;
+
+                return 0;
+            }
+
+            // Validamos los valores permitidos
+            if (matriz[i][j] < 0 || matriz[i][j] > 3) {
+                liberarJardin(matriz, *filas);
+                fclose(archivo);
+
+                *jardin = NULL;
+                *filas = 0;
+                *columnas = 0;
+
+                return 0;
+            }
+        }
+    }
+
+    // Comprobamos que no existan datos adicionales
+    char extra;
+
+    if (fscanf(archivo, " %c", &extra) == 1) {
+        liberarJardin(matriz, *filas);
+        fclose(archivo);
+
+        *jardin = NULL;
+        *filas = 0;
+        *columnas = 0;
+
+        return 0;
+    }
+
+    fclose(archivo);
+
+    *jardin = matriz;
+
+    return 1;
+}
+
 // imprimimos la matriz
 void imprimirMatriz(int **jardin, int filas, int columnas){
 
