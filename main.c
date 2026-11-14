@@ -19,15 +19,21 @@ int main(){
         return 1;
     }
     
-    int filas = config.tablero.filas;
-    int columnas = config.tablero.columnas;
-
-    int **jardin = crearJardin(filas, columnas);
+    int filas = 0;
+    int columnas = 0;
+    int **jardin = NULL;
+    
+    if (!leerJardin("jardin.txt", &jardin, &filas, &columnas)) {
+        printf("Error al cargar el jardin\n");
+        liberarConfiguracion(&config);
+        return 1;
+    }
     // abrimos la ventana del juego
     InitWindow(900, 600, "Plants vs Zombies");
     SetTargetFPS(60);
 
-    int soles=200;
+    int soles = config.solesIniciales;
+    
     printf("El juego comenzo\n");
     int girasolComprado=0;
 
@@ -49,13 +55,36 @@ int main(){
     Zombie zombies[MAX_ZOMBIES];
     printf("sali de la tienda correctamente\n");
 
-    int cantidadZombies=0;
-    int oleadaActual=1;
-    int zombiesPorOleada=5;
-    generarOleadas(jardin, zombies, &cantidadZombies, zombiesPorOleada, filas);
-    printf("Zombies creados: %d\n", cantidadZombies);
+    int oleadaActual = 1;
+    int zombiesPorOleada = config.zombiesPrimeraOleada;
+    
+    // Calculamos la capacidad necesaria para la oleada más grande
+    int capacidadZombies = config.zombiesPrimeraOleada +
+        (config.cantidadOleadas - 1) * config.incrementoZombies;
+    
+    // Reservamos memoria dinámicamente
+    Zombie *zombies = malloc(capacidadZombies * sizeof(Zombie));
+    
+    if (zombies == NULL) {
+        printf("Error al reservar memoria para los zombies\n");
+    
+        liberarJardin(jardin, filas);
+        liberarConfiguracion(&config);
+        CloseWindow();
+    
+        return 1;
+    }
+    
+    int cantidadZombies = 0;
+    
+    generarOleadas(jardin, zombies, &cantidadZombies,
+                   zombiesPorOleada, filas);
     //creamos un cortacesped para cada fila y cuando se utilice cambia a 0
-    int cortacesped[5]={1,1,1,1,1};
+    int cortacesped[filas];
+    
+    for (int i = 0; i < filas; i++) {
+        cortacesped[i] = 1;
+    }
     int turno=1;
     int contadorGirasoles=0;
 
@@ -89,22 +118,24 @@ int main(){
     // verificamos si termino la oleada
     if(zombiesActivos==0 && juegoTerminado==0){
 
-        if(oleadaActual<5){
+       if (oleadaActual < config.cantidadOleadas) {
+        
             oleadaActual++;
-
-        zombiesPorOleada=oleadaActual*5;
-
-        // reiniciamos la cantidad de zombies
-        cantidadZombies=0;
-
-        // generamos la siguiente oleada
-        generarOleadas(jardin, zombies, &cantidadZombies, zombiesPorOleada, filas);
-        printf("Comienza la oleada %d con %d zombies\n", oleadaActual, zombiesPorOleada);
+        
+            zombiesPorOleada += config.incrementoZombies;
+        
+            cantidadZombies = 0;
+        
+            generarOleadas(jardin, zombies, &cantidadZombies,
+                           zombiesPorOleada, filas);
+        
+            printf("Comienza la oleada %d con %d zombies\n",
+                   oleadaActual, zombiesPorOleada);
 
     } else {
-
+    
         printf("FELICIDADES! GANASTE EL JUEGO\n");
-        juegoTerminado=1;
+        juegoTerminado = 1;
     }
 }
             // imprimimos la matriz actualizada
@@ -121,10 +152,14 @@ int main(){
     // cerramos la ventana
     CloseWindow();
 
-    // liberamos la memoria de la matriz
     liberarJardin(jardin, filas);
+    free(zombies);
+    liberarConfiguracion(&config);
     
     jardin = NULL;
+    zombies = NULL;
     
     return 0;
+
+
 }
