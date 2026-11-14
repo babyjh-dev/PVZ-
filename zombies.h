@@ -7,7 +7,7 @@
 //funciones de los zombies
 void colocarZombie(int**jardin, int fila, int columna);
 void inicializarZombie(Zombie *zombie, int fila, int columna);
-void generarOleadas(int **jardin, Zombie zombies[], int *cantidadZombies, int cantidadNueva, int filas);
+void generarOleadas(int **jardin, Zombie zombies[], int *cantidadZombies, int cantidadNueva, int filas, int columnas);
 void moverZombie(int**jardin, Zombie *zombie);
 void activarCortacesped(int**jardin, int fila, int *cortacesped);
 #endif
