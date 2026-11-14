@@ -78,7 +78,7 @@ int main(){
     int cantidadZombies = 0;
     
     generarOleadas(jardin, zombies, &cantidadZombies,
-                   zombiesPorOleada, filas);
+               zombiesPorOleada, filas, columnas);
     //creamos un cortacesped para cada fila y cuando se utilice cambia a 0
     int cortacesped[filas];
     
@@ -127,7 +127,7 @@ int main(){
             cantidadZombies = 0;
         
             generarOleadas(jardin, zombies, &cantidadZombies,
-                           zombiesPorOleada, filas);
+               zombiesPorOleada, filas, columnas);
         
             printf("Comienza la oleada %d con %d zombies\n",
                    oleadaActual, zombiesPorOleada);
