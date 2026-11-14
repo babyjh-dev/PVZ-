@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -165,12 +164,12 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
 
     /* Reservamos memoria para los zombies */
     if ((size_t)config->cantidadZombies >
-        SIZE_MAX / sizeof(Zombie)) {
+        SIZE_MAX / sizeof(ZombieConfig)) {
         goto error;
     }
 
     config->zombies = malloc(
-        (size_t)config->cantidadZombies * sizeof(Zombie)
+        (size_t)config->cantidadZombies * sizeof(ZombieConfig)
     );
 
     if (config->zombies == NULL) {
@@ -181,7 +180,7 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
     /* Leemos las caracteristicas de cada zombie */
     for (int i = 0; i < config->cantidadZombies; i++) {
 
-        Zombie *zombie = &config->zombies[i];
+        ZombieConfig *zombie= &config->zombies[i];
 
         if (fscanf(archivo, "%29s %d %d %f %f",
             tipo,
