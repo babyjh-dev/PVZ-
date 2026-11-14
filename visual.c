@@ -1,6 +1,6 @@
 #include "raylib.h"
 
-int main(){
+void mainVisual(){
 
     // creamos la ventana
     InitWindow(900, 600, "Plants vs Zombies");
@@ -25,5 +25,4 @@ int main(){
     // cerramos la ventana
     CloseWindow();
 
-    return 0;
 }
