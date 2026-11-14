@@ -51,8 +51,7 @@ int main(){
         printf("\nQuieres comprar otra planta? (1:SI/0:NO): ");
         scanf("%d", &seguirComprando);
     }
-    //guardamos los datos de los zombies
-    Zombie zombies[MAX_ZOMBIES];
+    
     printf("sali de la tienda correctamente\n");
 
     int oleadaActual = 1;
@@ -67,10 +66,10 @@ int main(){
     
     if (zombies == NULL) {
         printf("Error al reservar memoria para los zombies\n");
-    
+        
+        CloseWindow();
         liberarJardin(jardin, filas);
         liberarConfiguracion(&config);
-        CloseWindow();
     
         return 1;
     }
