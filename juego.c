@@ -78,17 +78,18 @@ void actualizarTurno(int**jardin, Zombie zombies[], int cantidadZombies, int *so
                                 *juegoTerminado=1;
                                 return;
                             }
-                            //activamos el cortacesped de su fila
+                            // activamos el cortacesped de su fila
                             activarCortacesped(jardin, zombies[i].fila, &cortaCesped[zombies[i].fila]);
-                            //eliminamos todos los zombies de la fila
+
+                            // eliminamos todos los zombies de esa fila
                             for(int j=0; j<cantidadZombies; j++){
                                 if(zombies[j].activo==1 && zombies[j].fila==zombies[i].fila){
-                            //eliminamos el zombie que activo el cortacesped
-                            zombies[j].activo=0;
-                            }
+                                zombies[j].activo=0;
+                             }
                         }
-                        //pasamos al siguiente zombie
-                         continue;
+
+                        continue;
+                            
                     }
                         //movemos el zombie una posicion
                         moverZombie(jardin, &zombies[i]);
@@ -102,10 +103,6 @@ void actualizarTurno(int**jardin, Zombie zombies[], int cantidadZombies, int *so
                     zombiesActivos++;
                 }
             }
-            //verificamos si derrotamos a todos los zombies
-            if(zombiesActivos==0){
-                printf("derrotaste a todos los zombies. Ganaste :) \n");
-                *juegoTerminado=1;
-            }
+
          }
 }
