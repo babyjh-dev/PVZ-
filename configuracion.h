@@ -1,4 +1,3 @@
-
 #ifndef configuracion_h
 #define configuracion_h
 
