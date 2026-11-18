@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -14,7 +13,7 @@ static void liberarPartidaTemporal(Partida *partida){
         return;
     }
 
-    liberarJardin(partida->jardin, partida->filas);
+    liberarJardin(partida->jardin, &partida->filas);
 
     free(partida->zombies);
     free(partida->cortacesped);
@@ -142,7 +141,7 @@ int guardarPartida(const char *nombreArchivo, Partida *partida){
 }
 
 
-/* Carga una partida desde un archivo. */
+/* Carga una partida desde un archivo */
 int cargarPartida(const char *nombreArchivo, Partida *partida){
 
     if(nombreArchivo == NULL || partida == NULL){
@@ -252,8 +251,8 @@ int cargarPartida(const char *nombreArchivo, Partida *partida){
 
     // Reservamos memoria para el jardin.
     nueva.jardin = crearJardin(
-        nueva.filas,
-        nueva.columnas
+        &nueva.filas,
+        &nueva.columnas
     );
 
     if(nueva.jardin == NULL){
