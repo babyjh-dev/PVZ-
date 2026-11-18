@@ -135,6 +135,15 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
         else if (strcmp(tipo, "NUEZ") == 0) {
             planta->tipo = PLANTA_NUEZ;
         }
+        else if (strcmp(tipo, "GATOESPINOSO") == 0) {
+            planta->tipo = PLANTA_GATOESPINOSO;
+        }
+        else if (strcmp(tipo, "LANZAGUISANTESFUEGO") == 0) {
+            planta->tipo = PLANTA_LANZAGUISANTESFUEGO;
+        }
+        else if (strcmp(tipo, "NUEZREFORZADA") == 0) {
+            planta->tipo = PLANTA_NUEZREFORZADA;
+        }
         else {
             goto error;
         }
@@ -197,6 +206,12 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
         }
         else if (strcmp(tipo, "BANDERA") == 0) {
             zombie->tipo = ZOMBIE_BANDERA;
+        }
+        else if (strcmp(tipo, "CONO") == 0) {
+            zombie->tipo = ZOMBIE_CONO;
+        }
+        else if (strcmp(tipo, "CUBETA") == 0) {
+            zombie->tipo = ZOMBIE_CUBETA;
         }
         else {
             goto error;
