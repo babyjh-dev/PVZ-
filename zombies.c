@@ -2,136 +2,172 @@
 #include <stdlib.h>
 #include "zombies.h"
 
-//colocamos el zombie en el jardin
-void colocarZombie(int**jardin, int fila, int columna){
-    jardin[fila][columna]=4;
+// colocamos el zombie en el jardin
+void colocarZombie(int **jardin, int fila, int columna){
+    jardin[fila][columna] = CELDA_ZOMBIE;
 }
-// inicializamos los datos de un zombie
-void inicializarZombie(Zombie *zombie, int fila, int columna){
 
-    zombie->fila=fila;
-    zombie->columna=columna;
-    zombie->vida=3;
-    zombie->activo=1;
-    zombie->contadorAtaque=0;
-    zombie->contadorComida=0;
-    zombie->contadorMovimiento=0;
+// inicializamos los datos de un zombie
+void inicializarZombie(Zombie *zombie, int fila, int columna, ZombieConfig configuracion){
+    zombie->fila = fila;
+    zombie->columna = columna;
+    zombie->vida = configuracion.vida;
+    zombie->activo = 1;
+    zombie->contadorAtaque = 0;
+    zombie->contadorComida = 0;
+    zombie->contadorMovimiento = 0;
 
     // elegimos aleatoriamente el tipo
-    zombie->tipoZombie=rand()%2;
+    zombie->tipoZombie = configuracion.tipo;
+    zombie->dano = configuracion.dano;
+    zombie->velocidad = configuracion.velocidad;
+    zombie->frecuenciaAtaque = configuracion.frecuenciaAtaque;
 }
+
 // generamos los zombies de una oleada
-void generarOleadas(int **jardin, Zombie zombies[], int *cantidadZombies, int cantidadNueva, int filas, int columnas) {
+void generarOleadas(
+    int **jardin,
+    Zombie zombies[],
+    int *cantidadZombies,
+    int *zombiesGenerados,
+    int zombiesPorOleada,
+    int capacidadZombies,
+    int filas,
+    int columnas,
+    ZombieConfig configuraciones[],
+    int cantidadTipos
+) {
+    // revisamos si faltan zombies por generar
+    if (*zombiesGenerados >= zombiesPorOleada) return;
+    if (*cantidadZombies >= capacidadZombies) return;
+    if (cantidadTipos <= 0) return;
 
-    int fila;
-    int columna;
+    int columna = columnas - 1;
+    int inicio = rand() % filas;
 
-    for (int i = 0; i < cantidadNueva; i++) {
+    // buscamos una casilla vacia en la ultima columna
+    for (int j = 0; j < filas; j++) {
+        int fila = (inicio + j) % filas;
 
-        // Buscamos una posicion disponible
-        fila = rand() % filas;
-        columna = columnas - 1;
+        if (jardin[fila][columna] == CELDA_VACIA) {
+            colocarZombie(jardin, fila, columna);
 
-        // Si la casilla esta ocupada, buscamos otra columna
-        while (jardin[fila][columna] != 0) {
+            int tipoElegido = *zombiesGenerados % cantidadTipos;
+            printf("Zombie generado: %d\n", tipoElegido);
 
-            columna--;
+            inicializarZombie(
+                &zombies[*cantidadZombies],
+                fila,
+                columna,
+                configuraciones[tipoElegido]
+            );
 
-            // Si llegamos al inicio, buscamos otra fila
-            if (columna < 0) {
-                columna = columnas - 1;
-                fila = (fila + 1) % filas;
-            }
+            (*cantidadZombies)++;
+            (*zombiesGenerados)++;
+            break;
         }
-
-        // Inicializamos el zombie
-        inicializarZombie(&zombies[*cantidadZombies], fila, columna);
-
-        // Lo colocamos en el jardin
-        colocarZombie(jardin, fila, columna);
-
-        // Aumentamos la cantidad de zombies
-        (*cantidadZombies)++;
     }
 }
 
 // movemos el zombie
 void moverZombie(int **jardin, Zombie *zombie){
-    //definimos la velocidad del zombie
-    int velocidad=2;
 
-    //el abanderaddo avanza mas rapido
-    if(zombie->tipoZombie==1){
-        velocidad=1;
-    }
-    //contamos los turnos de movimiento
+    // definimos la velocidad del zombie
+    int velocidad = 2;
+
+    // el abanderado avanza mas rapido
+    if(zombie->tipoZombie == ZOMBIE_BANDERA) velocidad = 1;
+
     zombie->contadorMovimiento++;
 
-    if(zombie->contadorMovimiento<velocidad){
-        return;
-    }
-    zombie->contadorMovimiento=0;
+    if(zombie->contadorMovimiento < velocidad) return;
+
+    zombie->contadorMovimiento = 0;
 
     // verificamos que el zombie este activo y pueda avanzar
-    if(zombie->activo==1 && zombie->columna>0){
+    if(zombie->activo == 1 && zombie->columna > 0){
 
-        // revisamos la casilla que esta delante del zombie
-        int siguienteColumna=zombie->columna-1;
+        int siguienteColumna = zombie->columna - 1;
 
         // verificamos si hay una planta
-        if(jardin[zombie->fila][siguienteColumna]>=1 &&
-           jardin[zombie->fila][siguienteColumna]<=3){
+        if(jardin[zombie->fila][siguienteColumna] == CELDA_LANZAGUISANTES ||
+           jardin[zombie->fila][siguienteColumna] == CELDA_GIRASOL ||
+           jardin[zombie->fila][siguienteColumna] == CELDA_NUEZ ||
+           jardin[zombie->fila][siguienteColumna] == CELDA_GATOESPINOSO ||
+           jardin[zombie->fila][siguienteColumna] == CELDA_LANZAGUISANTESFUEGO ||
+           jardin[zombie->fila][siguienteColumna] == CELDA_NUEZREFORZADA){
 
-            // el zombie se detiene para comer la planta
             zombie->contadorComida++;
 
             printf("el zombie se esta comiendo una planta\n");
 
-            // definimos cuantos turnos resiste la planta
-            int resistencia=2;
+            int resistencia = 2;
 
-            // si es una nuez, resiste 5 turnos
-            if(jardin[zombie->fila][siguienteColumna]==3){
-                resistencia=5;
+            if(jardin[zombie->fila][siguienteColumna] == CELDA_NUEZ){
+                resistencia = 5;
             }
 
-            // verificamos si termino de comerse la planta
-            if(zombie->contadorComida>=resistencia){
+            if(jardin[zombie->fila][siguienteColumna] == CELDA_NUEZREFORZADA){
+                resistencia = 10;
+            }
 
-                // eliminamos la planta
-                jardin[zombie->fila][siguienteColumna]=0;
+            if(zombie->contadorComida >= resistencia){
+
+                jardin[zombie->fila][siguienteColumna] = CELDA_VACIA;
 
                 printf("el zombie destruyo la planta\n");
 
-                // reiniciamos el contador
-                zombie->contadorComida=0;
+                zombie->contadorComida = 0;
             }
         }
-        else if(jardin[zombie->fila][siguienteColumna]==4){
-            //si hay otro zombie adelante, esperamos 
-            return;
+        else if(jardin[zombie->fila][siguienteColumna] == CELDA_ZOMBIE){
+
+            // el abanderado puede saltar sobre otro zombie
+            if(zombie->tipoZombie == ZOMBIE_BANDERA &&
+               siguienteColumna > 0 &&
+               jardin[zombie->fila][siguienteColumna - 1] == CELDA_VACIA){
+
+                jardin[zombie->fila][zombie->columna] = CELDA_VACIA;
+
+                zombie->columna -= 2;
+
+                jardin[zombie->fila][zombie->columna] = CELDA_ZOMBIE;
+
+                zombie->contadorComida = 0;
+
+            } else {
+
+                // si no puede saltar, espera
+                return;
+            }
         }
         else {
-            jardin[zombie->fila][zombie->columna]=0;
+
+            jardin[zombie->fila][zombie->columna] = CELDA_VACIA;
+
             zombie->columna--;
-            jardin[zombie->fila][zombie->columna]=4;
-            zombie->contadorComida=0;
+
+            jardin[zombie->fila][zombie->columna] = CELDA_ZOMBIE;
+
+            zombie->contadorComida = 0;
         }
     }
 }
-void activarCortacesped(int**jardin, int fila, int *cortacesped){
 
-    //verificamos si el cortacesped esta disponible
-    if(*cortacesped==1){
-        printf("el cortacesped de la fila %d se activo \n", fila+1);
+void activarCortacesped(int **jardin, int fila, int *cortacesped, int columnas){
 
-        //eliminamos los zombies de esa fila
-        for(int j=0; j<9; j++){
-            if(jardin[fila][j]==4){
-                jardin[fila][j]=0;
+    // verificamos si el cortacesped esta disponible
+    if(*cortacesped == 1){
+
+        printf("el cortacesped de la fila %d se activo \n", fila + 1);
+
+        // eliminamos los zombies de esa fila
+        for (int j = 0; j < columnas; j++){
+            if(jardin[fila][j] == CELDA_ZOMBIE){
+                jardin[fila][j] = CELDA_VACIA;
             }
         }
-        //indicamos que ya fue usado
-        *cortacesped=0;
+
+        *cortacesped = 0;
     }
 }
