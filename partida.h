@@ -1,4 +1,3 @@
-
 #ifndef PARTIDA_H
 #define PARTIDA_H
 
@@ -11,4 +10,3 @@ int guardarPartida(const char *nombreArchivo, Partida *partida);
 int cargarPartida(const char *nombreArchivo, Partida *partida);
 
 #endif
-
