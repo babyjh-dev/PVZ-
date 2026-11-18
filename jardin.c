@@ -1,47 +1,42 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <raylib.h>
 
 #include "jardin.h"
 #include "zombies.h"
+#include "estructuras.h"
 
-// creamos la matriz dinamica
-int **crearJardin(int filas, int columnas){
+// Crea una matriz dinamica para representar el jardin.
+int **crearJardin(int *filas, int *columnas){
 
-    // Validamos las dimensiones
-    if(filas <= 0 || columnas <= 0){
+    if(filas == NULL || columnas == NULL ||
+       *filas <= 0 || *columnas <= 0){
         return NULL;
     }
 
-    // Reservamos memoria para los punteros de las filas
-    int **jardin = malloc(filas * sizeof(int *));
+    int **jardin = malloc(*filas * sizeof(int *));
 
     if(jardin == NULL){
         return NULL;
     }
 
-    // Reservamos memoria para cada fila
-    for(int i = 0; i < filas; i++){
+    for(int i = 0; i < *filas; i++){
 
-        jardin[i] = malloc(columnas * sizeof(int));
+        jardin[i] = malloc(*columnas * sizeof(int));
 
-        // Si falla una reserva, liberamos lo anterior
         if(jardin[i] == NULL){
 
+            // Liberamos las filas que ya fueron reservadas.
             for(int j = 0; j < i; j++){
                 free(jardin[j]);
             }
 
             free(jardin);
-
             return NULL;
         }
-    }
 
-    // Inicializamos todas las casillas en 0
-    for(int i = 0; i < filas; i++){
-        for(int j = 0; j < columnas; j++){
+        // Inicializamos todas las casillas vacias.
+        for(int j = 0; j < *columnas; j++){
             jardin[i][j] = 0;
         }
     }
@@ -49,164 +44,309 @@ int **crearJardin(int filas, int columnas){
     return jardin;
 }
 
-int leerJardin(const char *nombreArchivo, int ***jardin, int *filas, int *columnas) {
-    
-    if (nombreArchivo == NULL || jardin == NULL ||
-        filas == NULL || columnas == NULL) {
-        return 0;
-    
+
+// Lee las dimensiones y el contenido inicial del jardin desde un archivo.
+int **leerJardin(
+    const char *nombreArchivo,
+    int *filas,
+    int *columnas
+){
+
+    if(nombreArchivo == NULL || filas == NULL || columnas == NULL){
+        return NULL;
     }
-    
-    *jardin = NULL;
+
+    // Inicializamos las salidas.
     *filas = 0;
     *columnas = 0;
 
     FILE *archivo = fopen(nombreArchivo, "r");
 
-    // Leemos las dimensiones del jardin
-    if (fscanf(archivo, "%d %d", filas, columnas) != 2 ||
-        *filas <= 0 || *columnas <= 0) {
-
-        fclose(archivo);
-        return 0;
+    // Comprobamos que el archivo se haya abierto correctamente.
+    if(archivo == NULL){
+        printf("Error: no se pudo abrir el archivo %s.\n", nombreArchivo);
+        return NULL;
     }
 
-    // Creamos la matriz dinamicamente
-    int **matriz = crearJardin(*filas, *columnas);
+    if(fscanf(archivo, "%d %d", filas, columnas) != 2 ||
+       *filas <= 0 || *columnas <= 0){
 
-    if (matriz == NULL) {
+        printf("Error: dimensiones del jardin invalidas.\n");
+        fclose(archivo);
+        return NULL;
+    }
+
+    int **jardin = crearJardin(filas, columnas);
+
+    if(jardin == NULL){
+        printf("Error: no se pudo reservar memoria para el jardin.\n");
         fclose(archivo);
         *filas = 0;
         *columnas = 0;
-        return 0;
+        return NULL;
     }
 
-    // Leemos los valores de cada casilla
-    for (int i = 0; i < *filas; i++) {
-        for (int j = 0; j < *columnas; j++) {
+    for(int i = 0; i < *filas; i++){
+        for(int j = 0; j < *columnas; j++){
 
-            if (fscanf(archivo, "%d", &matriz[i][j]) != 1) {
-                liberarJardin(matriz, *filas);
-                fclose(archivo);
+            if(fscanf(archivo, "%d", &jardin[i][j]) != 1){
 
-                *jardin = NULL;
+                printf("Error: datos incompletos en el archivo del jardin.\n");
+
+                liberarJardin(jardin, filas);
                 *filas = 0;
                 *columnas = 0;
 
-                return 0;
+                fclose(archivo);
+                return NULL;
             }
 
-            // Validamos los valores permitidos
-            if (matriz[i][j] < 0 || matriz[i][j] > 3) {
-                liberarJardin(matriz, *filas);
-                fclose(archivo);
+            // El archivo inicial solo admite casillas vacias o plantas.
+            if(jardin[i][j] < 0 || jardin[i][j] > CELDA_NUEZREFORZADA ||
+               jardin[i][j] == CELDA_ZOMBIE){
 
-                *jardin = NULL;
+                printf("Error: valor de casilla invalido en el jardin.\n");
+
+                liberarJardin(jardin, filas);
                 *filas = 0;
                 *columnas = 0;
 
-                return 0;
+                fclose(archivo);
+                return NULL;
             }
         }
     }
 
-    // Comprobamos que no existan datos adicionales
-    char extra;
+    // Comprobamos que no existan datos adicionales.
+    int datoExtra;
 
-    if (fscanf(archivo, " %c", &extra) == 1) {
-        liberarJardin(matriz, *filas);
-        fclose(archivo);
+    if(fscanf(archivo, "%d", &datoExtra) == 1){
 
-        *jardin = NULL;
+        printf("Error: existen datos adicionales en el archivo del jardin.\n");
+
+        liberarJardin(jardin, filas);
         *filas = 0;
         *columnas = 0;
 
-        return 0;
+        fclose(archivo);
+        return NULL;
     }
 
     fclose(archivo);
-
-    *jardin = matriz;
-
-    return 1;
+    return jardin;
 }
 
-// imprimimos la matriz
-void imprimirMatriz(int **jardin, int filas, int columnas){
 
-    for(int i=0; i<filas; i++){
-        for(int j=0; j<columnas; j++){
+// Imprime el contenido de la matriz en consola.
+void imprimirMatriz(int **jardin, int *filas, int *columnas){
+
+    if(jardin == NULL || filas == NULL || columnas == NULL){
+        return;
+    }
+
+    for(int i = 0; i < *filas; i++){
+
+        for(int j = 0; j < *columnas; j++){
             printf("%d ", jardin[i][j]);
         }
+
         printf("\n");
     }
 }
 
-// dibujamos el jardin
-void dibujarJardin(int **jardin, int filas, int columnas, Zombie zombies[], int cantidadZombies){
 
-    BeginDrawing();
-    ClearBackground(RAYWHITE);
+// Dibuja el jardin y los zombies en pantalla.
+void dibujarJardin(
+    int **jardin,
+    int *filas,
+    int *columnas,
+    Zombie zombies[],
+    int *cantidadZombies
+){
 
-    DrawText("PLANTS VS ZOMBIES", 250, 20, 30, DARKGREEN);
+    if(jardin == NULL || filas == NULL ||
+       columnas == NULL || cantidadZombies == NULL){
+        return;
+    }
 
-    // dibujamos el jardin
-    for(int i=0; i<filas; i++){
-        for(int j=0; j<columnas; j++){
+    int anchoCelda = 80;
+    int altoCelda = 80;
 
-            int x=100+j*70;
-            int y=100+i*70;
+    for(int i = 0; i < *filas; i++){
 
-            DrawRectangle(x, y, 70, 70, LIME);
-            DrawRectangleLines(x, y, 70, 70, DARKGREEN);
+        for(int j = 0; j < *columnas; j++){
 
-            if(jardin[i][j]==1){
-                DrawCircle(x+35, y+35, 20, BLUE);
-            }
-            else if(jardin[i][j]==2){
-                DrawCircle(x+35, y+35, 20, YELLOW);
-            }
-            else if(jardin[i][j]==3){
-                DrawCircle(x+35, y+35, 20, BROWN);
+            int x = j * anchoCelda;
+            int y = i * altoCelda;
+
+            DrawRectangle(x, y, anchoCelda, altoCelda, GREEN);
+            DrawRectangleLines(x, y, anchoCelda, altoCelda, DARKGREEN);
+
+            switch(jardin[i][j]){
+
+                case CELDA_LANZAGUISANTES:
+                    DrawCircle(
+                        x + anchoCelda / 2,
+                        y + altoCelda / 2,
+                        20,
+                        LIME
+                    );
+                    break;
+
+                case CELDA_GIRASOL:
+                    DrawCircle(
+                        x + anchoCelda / 2,
+                        y + altoCelda / 2,
+                        20,
+                        YELLOW
+                    );
+                    break;
+
+                case CELDA_NUEZ:
+                    DrawRectangle(
+                        x + 15,
+                        y + 15,
+                        50,
+                        50,
+                        BROWN
+                    );
+                    break;
+
+                case CELDA_GATOESPINOSO:
+                    // Dibujamos el gato espinoso.
+                    DrawCircle(
+                        x + anchoCelda / 2,
+                        y + altoCelda / 2,
+                        22,
+                        PINK
+                    );
+                    DrawTriangle(
+                        (Vector2){x + 25, y + 30},
+                        (Vector2){x + 30, y + 10},
+                        (Vector2){x + 42, y + 27},
+                        PINK
+                    );
+                    DrawTriangle(
+                        (Vector2){x + 50, y + 27},
+                        (Vector2){x + 62, y + 10},
+                        (Vector2){x + 65, y + 30},
+                        PINK
+                    );
+                    break;
+
+                case CELDA_LANZAGUISANTESFUEGO:
+                    // Dibujamos el lanzaguisantes de fuego.
+                    DrawCircle(
+                        x + anchoCelda / 2,
+                        y + altoCelda / 2,
+                        23,
+                        ORANGE
+                    );
+                    DrawCircle(
+                        x + anchoCelda / 2,
+                        y + altoCelda / 2,
+                        12,
+                        RED
+                    );
+                    break;
+
+                case CELDA_NUEZREFORZADA:
+                    // Dibujamos la nuez reforzada.
+                    DrawRectangle(
+                        x + 10,
+                        y + 10,
+                        60,
+                        60,
+                        DARKBROWN
+                    );
+                    DrawRectangleLines(
+                        x + 10,
+                        y + 10,
+                        60,
+                        60,
+                        BLACK
+                    );
+                    break;
             }
         }
     }
 
-    // dibujamos los zombies segun su tipo
-    for(int i=0; i<cantidadZombies; i++){
+    // Dibujamos los zombies activos.
+    for(int i = 0; i < *cantidadZombies; i++){
 
-        if(zombies[i].activo==1){
+        if(zombies[i].activo == 1){
 
-            int x=100+zombies[i].columna*70;
-            int y=100+zombies[i].fila*70;
+            int x = zombies[i].columna * anchoCelda;
+            int y = zombies[i].fila * altoCelda;
 
-            // zombie normal
-            if(zombies[i].tipoZombie==0){
-                DrawCircle(x+35, y+35, 20, RED);
-            }
-            // zombie abanderado
-            else{
-                DrawCircle(x+35, y+35, 20, ORANGE);
+            if(zombies[i].tipoZombie == ZOMBIE_NORMAL){
 
-                DrawLine(x+35, y+15, x+35, y-5, BLACK);
-
-                DrawTriangle(
-                    (Vector2){x+35, y-5},
-                    (Vector2){x+55, y+2},
-                    (Vector2){x+35, y+10},
+                // Dibujamos el zombie normal.
+                DrawCircle(
+                    x + anchoCelda / 2,
+                    y + altoCelda / 2,
+                    25,
                     RED
+                );
+            }
+            else if(zombies[i].tipoZombie == ZOMBIE_BANDERA){
+
+                // Dibujamos el zombie abanderado.
+                DrawCircle(
+                    x + anchoCelda / 2,
+                    y + altoCelda / 2,
+                    25,
+                    BLUE
+                );
+            }
+            else if(zombies[i].tipoZombie == ZOMBIE_CONO){
+                // Dibujamos el zombie con cono.
+                DrawCircle(
+                    x + anchoCelda / 2,
+                    y + altoCelda / 2,
+                    25,
+                    GRAY
+                );
+            }
+            else if(zombies[i].tipoZombie == ZOMBIE_CUBETA){
+
+                // Dibujamos el zombie con cubeta.
+                DrawCircle(
+                    x + anchoCelda / 2,
+                    y + altoCelda / 2,
+                    25,
+                    DARKGREEN
+                );
+
+                DrawRectangle(
+                    x + 25,
+                    y + 8,
+                    30,
+                    25,
+                    GRAY
+                );
+
+                DrawRectangleLines(
+                    x + 25,
+                    y + 8,
+                    30,
+                    25,
+                    DARKGRAY
                 );
             }
         }
     }
-
-    EndDrawing();
 }
 
-// liberamos la memoria
-void liberarJardin(int **jardin, int filas){
 
-    for(int i=0; i<filas; i++){
+// Libera la memoria dinamica del jardin.
+void liberarJardin(int **jardin, int *filas){
+
+    if(jardin == NULL || filas == NULL){
+        return;
+    }
+
+    for(int i = 0; i < *filas; i++){
         free(jardin[i]);
     }
 
