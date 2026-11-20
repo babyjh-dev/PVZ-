@@ -25,4 +25,3 @@ void dibujarJardin(
 void liberarJardin(int **jardin, int *filas);
 
 #endif
-
