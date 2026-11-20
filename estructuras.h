@@ -1,3 +1,4 @@
+
 #ifndef estructuras_h
 #define estructuras_h
 
@@ -67,6 +68,14 @@ typedef struct {
     float frecuenciaAtaque;
 } Zombie;
 
+// Estado individual de cada sol.
+typedef struct {
+    int x;
+    int y;
+    int valor;
+    int activo;
+} Sol;
+
 // Información del tablero y su matriz
 typedef struct {
     int filas;
@@ -104,9 +113,13 @@ typedef struct {
     int turno;
     int contadorGirasoles;
     int oleadaActual;
-    int zombiesPorOleada;//cantidad de zombies que debe de haber por oleada
-    int zombiesGenerados;//cantidad de zombies que ya han aparecido
+    int zombiesPorOleada; //cantidad de zombies que debe de haber por oleada
+    int zombiesGenerados; //cantidad de zombies que ya han aparecido
     int juegoTerminado;
+    // Soles disponibles durante la partida.
+    Sol *solesJardin;
+    int cantidadSoles;
+    int capacidadSoles;
 } Partida;
 
 #endif
