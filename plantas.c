@@ -2,7 +2,7 @@
 #include "plantas.h"
 #include "estructuras.h"
 
-// Compramos y colocamos una planta.
+// Compramos y colocamos una planta
 int comprarPlanta(
     int **jardin,
     int filas,
@@ -17,7 +17,7 @@ int comprarPlanta(
     int costo = 0;
     int tipoPlanta = 0;
 
-    // Mostramos las plantas disponibles.
+    // Mostramos las plantas disponibles
     printf("\n--- TIENDA ---\n");
     printf("Tienes %d soles\n", *soles);
     printf("1. Girasol - 50 soles\n");
@@ -35,7 +35,7 @@ int comprarPlanta(
         return 0;
     }
 
-    // Identificamos la planta y su costo.
+    // Identificamos la planta y su costo
     if (opcion == 1) {
         costo = 50;
         tipoPlanta = CELDA_GIRASOL;
@@ -61,19 +61,19 @@ int comprarPlanta(
         tipoPlanta = CELDA_NUEZREFORZADA;
     }
 
-    // Verificamos si la opcion es valida.
+    // Verificamos si la opcion es valida
     if (costo == 0) {
         printf("Opcion no valida\n");
         return 0;
     }
 
-    // Verificamos si tenemos suficientes soles.
+    // Verificamos si tenemos suficientes soles
     if (*soles < costo) {
         printf("No tienes suficientes soles\n");
         return 0;
     }
 
-    // Pedimos la posicion donde queremos colocar la planta.
+    // Pedimos la posicion donde queremos colocar la planta
     printf("Ingrese la fila donde quiere colocar la planta (0 a %d): ",
            filas - 1);
 
@@ -90,7 +90,7 @@ int comprarPlanta(
         return 0;
     }
 
-    // Verificamos que la posicion exista y este vacia.
+    // Verificamos que la posicion exista y este vacia
     if (*filaPlanta < 0 || *filaPlanta >= filas ||
         *columnaPlanta < 0 || *columnaPlanta >= columnas) {
 
@@ -103,16 +103,16 @@ int comprarPlanta(
         return 0;
     }
 
-    // Descontamos el costo de la planta.
+    // Descontamos el costo de la planta
     *soles -= costo;
 
-    // Colocamos la planta en el jardin.
+    // Colocamos la planta en el jardin
     jardin[*filaPlanta][*columnaPlanta] = tipoPlanta;
 
     printf("Compra realizada!\n");
     printf("Soles restantes: %d\n", *soles);
 
-    // Registramos si compramos un girasol.
+    // Registramos si compramos un girasol
     if (tipoPlanta == 2) {
         *girasolComprado = 1;
     }
