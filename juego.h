@@ -1,4 +1,3 @@
-
 #ifndef juego_h
 #define juego_h
 
@@ -8,16 +7,16 @@
 // Actualizamos el estado del juego
 void actualizarTurno(
     int **jardin,
-    Zombie zombies[],
-    int cantidadZombies,
+    Zombie *zombies,
+    int *cantidadZombies,
     int *soles,
     int *contadorGirasoles,
     int *juegoTerminado,
-    int cortacesped[],
-    int filas,
-    int columnas,
+    int *cortacesped,
+    int *filas,
+    int *columnas,
     int **contadoresAtaque,
-    Sol solesGenerados[],
+    Sol *solesGenerados,
     int *cantidadSoles,
     int *capacidadSoles
 );
