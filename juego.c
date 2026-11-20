@@ -1,7 +1,12 @@
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "juego.h"
 #include "zombies.h"
+#include "estructuras.h"
+
+// Contador para generar soles aleatorios
+int contadorSolesAleatorios = 0;
 
 // Actualizamos el estado del juego
 void actualizarTurno(
@@ -14,7 +19,10 @@ void actualizarTurno(
     int cortacesped[],
     int filas,
     int columnas,
-    int **contadoresAtaque
+    int **contadoresAtaque,
+    Sol solesGenerados[],
+    int *cantidadSoles,
+    int *capacidadSoles
 ){
 
     // Contamos los girasoles que hay en el jardin
@@ -33,16 +41,61 @@ void actualizarTurno(
 
     if(*contadorGirasoles == 2 && cantidadGirasoles > 0){
 
-        // Agregamos 50 soles por cada girasol
-        *soles = *soles + (50 * cantidadGirasoles);
+        // Generamos un sol por cada girasol
+        for(int i = 0; i < filas; i++){
+            for(int j = 0; j < columnas; j++){
+
+                if(jardin[i][j] == CELDA_GIRASOL &&
+                   *cantidadSoles < *capacidadSoles){
+
+                    solesGenerados[*cantidadSoles].x = j * 80 + 40;
+                    solesGenerados[*cantidadSoles].y = i * 80 + 40;
+                    solesGenerados[*cantidadSoles].valor = 50;
+                    solesGenerados[*cantidadSoles].activo = 1;
+
+                    (*cantidadSoles)++;
+                }
+            }
+        }
 
         printf("Los girasoles generaron %d soles\n",
                50 * cantidadGirasoles);
 
-        printf("Cantidad de soles: %d\n", *soles);
-
         // Reiniciamos el contador
         *contadorGirasoles = 0;
+    }
+
+    // Generamos soles aleatorios cada 5 turnos
+    contadorSolesAleatorios++;
+
+    // Generamos soles aleatorios en el pasto
+    if(contadorSolesAleatorios >= 5 &&
+       *cantidadSoles < *capacidadSoles){
+
+        // Buscamos una posicion vacia
+        for(int intento = 0; intento < 20; intento++){
+
+            int filaSol = rand() % filas;
+            int columnaSol = rand() % columnas;
+
+            if(jardin[filaSol][columnaSol] == CELDA_VACIA){
+
+                // Creamos el sol
+                solesGenerados[*cantidadSoles].x = columnaSol * 80 + 40;
+                solesGenerados[*cantidadSoles].y = filaSol * 80 + 40;
+                solesGenerados[*cantidadSoles].valor = 50;
+                solesGenerados[*cantidadSoles].activo = 1;
+
+                (*cantidadSoles)++;
+
+                printf("Aparecio un sol aleatorio\n");
+
+                // Reiniciamos el contador
+                contadorSolesAleatorios = 0;
+
+                break;
+            }
+        }
     }
 
     // Recorremos las plantas que pueden atacar
