@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,7 +6,7 @@
 
 #include "configuracion.h"
 
-
+// Carga los datos del archivo de configuracion
 int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
 
     FILE *archivo;
@@ -15,6 +14,7 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
     char tipo[30];
     int caracter;
 
+    // Comprobamos que los parametros sean validos
     if (config == NULL || nombreArchivo == NULL) {
         return 0;
     }
@@ -30,7 +30,7 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
         return 0;
     }
 
-    //Leemos la vida inicial de la casa
+    // Leemos la vida inicial de la casa
     if (fscanf(archivo, "%29s", seccion) != 1 || strcmp(seccion, "CASA") != 0) {
         goto error;
     }
@@ -38,7 +38,6 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
     if (fscanf(archivo, "%d", &config->tablero.vidaCasa) != 1 || config->tablero.vidaCasa <= 0) {
         goto error;
     }
-
 
     // Leemos los parametros generales del juego
     if (fscanf(archivo, "%29s", seccion) != 1 || strcmp(seccion, "JUEGO") != 0) {
@@ -53,13 +52,13 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
         goto error;
     }
 
+    // Validamos que los valores sean correctos
     if (config->solesIniciales < 0 ||
         config->frecuenciaBaseSoles <= 0 ||
         config->tiempoPreparacion < 0 ||
         config->tiempoDescanso < 0) {
         goto error;
     }
-
 
     // Leemos los parametros de las oleadas
     if (fscanf(archivo, "%29s", seccion) != 1 ||
@@ -74,12 +73,12 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
         goto error;
     }
 
+    // Validamos los datos de las oleadas
     if (config->cantidadOleadas <= 0 ||
         config->zombiesPrimeraOleada <= 0 ||
         config->incrementoZombies < 0) {
         goto error;
     }
-
 
     // Leemos la cantidad de plantas
     if (fscanf(archivo, "%29s", seccion) != 1 || strcmp(seccion, "PLANTAS") != 0) {
@@ -101,7 +100,6 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
         goto error;
     }
 
-
     // Leemos las caracteristicas de cada planta
     for (int i = 0; i < config->cantidadPlantas; i++) {
 
@@ -118,7 +116,7 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
             goto error;
         }
 
-        //Identificamos el tipo de planta
+        // Identificamos el tipo de planta
         if (strcmp(tipo, "GIRASOL") == 0) {
             planta->tipo = PLANTA_GIRASOL;
         }
@@ -141,15 +139,14 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
             goto error;
         }
 
-        //Validamos sus caracteristicas
+        // Validamos las caracteristicas de la planta
         if (planta->costo < 0 || planta->vida <= 0 || planta->solesGenerados < 0 ||
             planta->frecuenciaGeneracion < 0 || planta->dano < 0 || planta->frecuenciaAtaque < 0) {
             goto error;
         }
     }
 
-
-    //Leemos la cantidad de zombies
+    // Leemos la cantidad de zombies
     if (fscanf(archivo, "%29s", seccion) != 1 || strcmp(seccion, "ZOMBIES") != 0) {
         goto error;
     }
@@ -169,7 +166,6 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
         goto error;
     }
 
-
     // Leemos las caracteristicas de cada zombie
     for (int i = 0; i < config->cantidadZombies; i++) {
 
@@ -184,7 +180,7 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
             goto error;
         }
 
-        //Identificamos el tipo de zombie
+        // Identificamos el tipo de zombie
         if (strcmp(tipo, "NORMAL") == 0) {
             zombie->tipo = ZOMBIE_NORMAL;
         }
@@ -201,12 +197,12 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
             goto error;
         }
 
-        // Validamos sus caracteristicas
-        if (zombie->vida <= 0 || zombie->dano < 0 || zombie->velocidad <= 0 || zombie->frecuenciaAtaque < 0) {
+        // Validamos las caracteristicas del zombie
+        if (zombie->vida <= 0 || zombie->dano < 0 ||
+            zombie->velocidad <= 0 || zombie->frecuenciaAtaque < 0) {
             goto error;
         }
     }
-
 
     // Comprobamos que no existan datos adicionales
     while ((caracter = fgetc(archivo)) != EOF) {
@@ -215,16 +211,22 @@ int cargarConfiguracion(Configuracion *config, const char *nombreArchivo) {
         }
     }
 
+    // Comprobamos si ocurrio un error durante la lectura
+    if (ferror(archivo)) {
+        goto error;
+    }
+
+    // Cerramos el archivo cuando la lectura termina correctamente
     fclose(archivo);
     return 1;
 
-
-// Si ocurre un error, liberamos lo reservado
-error://etiqueta que indica donde debe continuar cuando se ejecuta goto error;
-
+    // Si ocurre un error, liberamos lo reservado
+error:
     printf("Error al leer la configuracion.\n");
 
     fclose(archivo);
+
+    // Liberamos la memoria que se habia reservado
     liberarConfiguracion(config);
 
     // Dejamos la estructura en estado inicial
@@ -233,20 +235,22 @@ error://etiqueta que indica donde debe continuar cuando se ejecuta goto error;
     return 0;
 }
 
-
-//Libera la memoria dinamica de la configuracion
+// Libera la memoria dinamica de la configuracion
 void liberarConfiguracion(Configuracion *config) {
 
     if (config == NULL) {
         return;
     }
 
+    // Liberamos los arreglos reservados dinamicamente
     free(config->plantas);
     free(config->zombies);
 
+    // Dejamos los punteros en NULL
     config->plantas = NULL;
     config->zombies = NULL;
 
+    // Reiniciamos las cantidades
     config->cantidadPlantas = 0;
     config->cantidadZombies = 0;
 }
