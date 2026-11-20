@@ -1,12 +1,13 @@
 #include <stdio.h>
+
 #include "plantas.h"
 #include "estructuras.h"
 
 // Compramos y colocamos una planta
 int comprarPlanta(
     int **jardin,
-    int filas,
-    int columnas,
+    int *filas,
+    int *columnas,
     int *soles,
     int *girasolComprado,
     int *filaPlanta,
@@ -17,7 +18,7 @@ int comprarPlanta(
     int costo = 0;
     int tipoPlanta = 0;
 
-    // Mostramos las plantas disponibles
+    // Mostramos las plantas disponibles en la tienda
     printf("\n--- TIENDA ---\n");
     printf("Tienes %d soles\n", *soles);
     printf("1. Girasol - 50 soles\n");
@@ -27,7 +28,7 @@ int comprarPlanta(
     printf("5. Lanzaguisantes de fuego - 175 soles\n");
     printf("6. Nuez reforzada - 200 soles\n");
 
-    // Pedimos la planta que queremos comprar.
+    // Pedimos la planta que queremos comprar
     printf("Ingrese la planta que desea comprar: ");
 
     if (scanf("%d", &opcion) != 1) {
@@ -35,7 +36,7 @@ int comprarPlanta(
         return 0;
     }
 
-    // Identificamos la planta y su costo
+    // Identificamos la planta elegida y su costo
     if (opcion == 1) {
         costo = 50;
         tipoPlanta = CELDA_GIRASOL;
@@ -49,70 +50,72 @@ int comprarPlanta(
         tipoPlanta = CELDA_NUEZ;
     }
     else if (opcion == 4) {
-        costo = 150;
+        costo = 125;
         tipoPlanta = CELDA_GATOESPINOSO;
     }
     else if (opcion == 5) {
-        costo = 150;
+        costo = 175;
         tipoPlanta = CELDA_LANZAGUISANTESFUEGO;
     }
     else if (opcion == 6) {
-        costo = 150;
+        costo = 200;
         tipoPlanta = CELDA_NUEZREFORZADA;
     }
 
-    // Verificamos si la opcion es valida
+    // Verificamos si la opcion ingresada es valida
     if (costo == 0) {
         printf("Opcion no valida\n");
         return 0;
     }
 
-    // Verificamos si tenemos suficientes soles
+    // Verificamos si tenemos suficientes soles para comprar
     if (*soles < costo) {
         printf("No tienes suficientes soles\n");
         return 0;
     }
 
-    // Pedimos la posicion donde queremos colocar la planta
+    // Pedimos la fila donde queremos colocar la planta
     printf("Ingrese la fila donde quiere colocar la planta (0 a %d): ",
-           filas - 1);
+           *filas - 1);
 
     if (scanf("%d", filaPlanta) != 1) {
         printf("Fila no valida\n");
         return 0;
     }
 
+    // Pedimos la columna donde queremos colocar la planta
     printf("Ingrese la columna donde quiere colocar la planta (0 a %d): ",
-           columnas - 1);
+           *columnas - 1);
 
     if (scanf("%d", columnaPlanta) != 1) {
         printf("Columna no valida\n");
         return 0;
     }
 
-    // Verificamos que la posicion exista y este vacia
-    if (*filaPlanta < 0 || *filaPlanta >= filas ||
-        *columnaPlanta < 0 || *columnaPlanta >= columnas) {
+    // Verificamos que la posicion ingresada este dentro del jardin
+    if (*filaPlanta < 0 || *filaPlanta >= *filas ||
+        *columnaPlanta < 0 || *columnaPlanta >= *columnas) {
 
         printf("La posicion esta fuera del jardin\n");
         return 0;
     }
 
+    // Comprobamos que la casilla elegida este vacia
     if (jardin[*filaPlanta][*columnaPlanta] != 0) {
         printf("La posicion esta ocupada\n");
         return 0;
     }
 
-    // Descontamos el costo de la planta
+    // Descontamos el costo de la planta de los soles disponibles
     *soles -= costo;
 
-    // Colocamos la planta en el jardin
+    // Colocamos la planta en la posicion elegida
     jardin[*filaPlanta][*columnaPlanta] = tipoPlanta;
 
     printf("Compra realizada!\n");
     printf("Soles restantes: %d\n", *soles);
 
-    // Registramos si compramos un girasol
+    // Registramos si el jugador compro un girasol
     if (tipoPlanta == 2) {
         *girasolComprado = 1;
     }
