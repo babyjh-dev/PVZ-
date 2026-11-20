@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <raylib.h>
@@ -7,27 +6,31 @@
 #include "zombies.h"
 #include "estructuras.h"
 
-// Crea una matriz dinamica para representar el jardin.
+
+// Crea una matriz dinamica para representar el jardin
 int **crearJardin(int *filas, int *columnas){
 
+    // Comprobamos que las dimensiones sean validas
     if(filas == NULL || columnas == NULL ||
        *filas <= 0 || *columnas <= 0){
         return NULL;
     }
 
+    // Reservamos memoria para las filas de la matriz
     int **jardin = malloc(*filas * sizeof(int *));
 
     if(jardin == NULL){
         return NULL;
     }
 
+    // Reservamos memoria para cada fila
     for(int i = 0; i < *filas; i++){
 
         jardin[i] = malloc(*columnas * sizeof(int));
 
         if(jardin[i] == NULL){
 
-            // Liberamos las filas que ya fueron reservadas.
+            // Liberamos las filas que ya fueron reservadas
             for(int j = 0; j < i; j++){
                 free(jardin[j]);
             }
@@ -36,7 +39,7 @@ int **crearJardin(int *filas, int *columnas){
             return NULL;
         }
 
-        // Inicializamos todas las casillas vacias.
+        // Inicializamos todas las casillas como vacias
         for(int j = 0; j < *columnas; j++){
             jardin[i][j] = 0;
         }
@@ -46,29 +49,32 @@ int **crearJardin(int *filas, int *columnas){
 }
 
 
-// Lee las dimensiones y el contenido inicial del jardin desde un archivo.
+// Lee las dimensiones y el contenido inicial del jardin desde un archivo
 int **leerJardin(
     const char *nombreArchivo,
     int *filas,
     int *columnas
 ){
 
+    // Comprobamos que los parametros sean validos
     if(nombreArchivo == NULL || filas == NULL || columnas == NULL){
         return NULL;
     }
 
-    // Inicializamos las salidas.
+    // Inicializamos las dimensiones
     *filas = 0;
     *columnas = 0;
 
+    // Abrimos el archivo en modo lectura
     FILE *archivo = fopen(nombreArchivo, "r");
 
-    // Comprobamos que el archivo se haya abierto correctamente.
+    // Comprobamos que el archivo se haya abierto correctamente
     if(archivo == NULL){
         printf("Error: no se pudo abrir el archivo %s.\n", nombreArchivo);
         return NULL;
     }
 
+    // Leemos las dimensiones del jardin
     if(fscanf(archivo, "%d %d", filas, columnas) != 2 ||
        *filas <= 0 || *columnas <= 0){
 
@@ -77,6 +83,7 @@ int **leerJardin(
         return NULL;
     }
 
+    // Creamos la matriz con las dimensiones leidas
     int **jardin = crearJardin(filas, columnas);
 
     if(jardin == NULL){
@@ -87,6 +94,7 @@ int **leerJardin(
         return NULL;
     }
 
+    // Leemos los valores de cada casilla del jardin
     for(int i = 0; i < *filas; i++){
         for(int j = 0; j < *columnas; j++){
 
@@ -102,7 +110,8 @@ int **leerJardin(
                 return NULL;
             }
 
-            // El archivo inicial solo admite casillas vacias o plantas.
+            /* Comprobamos que los valores de las casillas sean validos
+             El archivo inicial solo admite casillas vacias o plantas*/
             if(jardin[i][j] < 0 || jardin[i][j] > CELDA_NUEZREFORZADA ||
                jardin[i][j] == CELDA_ZOMBIE){
 
@@ -118,7 +127,7 @@ int **leerJardin(
         }
     }
 
-    // Comprobamos que no existan datos adicionales.
+    // Comprobamos que no existan datos adicionales en el archivo
     int datoExtra;
 
     if(fscanf(archivo, "%d", &datoExtra) == 1){
@@ -133,18 +142,22 @@ int **leerJardin(
         return NULL;
     }
 
+    // Cerramos el archivo despues de terminar la lectura
     fclose(archivo);
+
     return jardin;
 }
 
 
-// Imprime el contenido de la matriz en consola.
+// Imprime el contenido de la matriz en la consola
 void imprimirMatriz(int **jardin, int *filas, int *columnas){
 
+    // Comprobamos que los datos sean validos
     if(jardin == NULL || filas == NULL || columnas == NULL){
         return;
     }
 
+    // Recorremos las filas y columnas para mostrar el jardin
     for(int i = 0; i < *filas; i++){
 
         for(int j = 0; j < *columnas; j++){
@@ -156,36 +169,44 @@ void imprimirMatriz(int **jardin, int *filas, int *columnas){
 }
 
 
-// Dibuja el jardin y los zombies en pantalla.
+// Dibuja el jardin y los zombies en pantalla
 void dibujarJardin(
     int **jardin,
     int *filas,
     int *columnas,
-    Zombie zombies[],
+    Zombie *zombies,
     int *cantidadZombies
 ){
 
+    // Comprobamos que los datos necesarios existan
     if(jardin == NULL || filas == NULL ||
        columnas == NULL || cantidadZombies == NULL){
         return;
     }
 
+    // Definimos el ancho y alto de cada casilla
     int anchoCelda = 80;
     int altoCelda = 80;
 
+    // Recorremos todas las casillas del jardin
     for(int i = 0; i < *filas; i++){
 
         for(int j = 0; j < *columnas; j++){
 
+            // Calculamos la posicion de cada casilla en la ventana
             int x = j * anchoCelda;
             int y = i * altoCelda;
 
+            // Dibujamos el fondo y los bordes de cada casilla
             DrawRectangle(x, y, anchoCelda, altoCelda, GREEN);
             DrawRectangleLines(x, y, anchoCelda, altoCelda, DARKGREEN);
 
+            // Revisamos que elemento se encuentra en la casilla
             switch(jardin[i][j]){
 
                 case CELDA_LANZAGUISANTES:
+
+                    // Dibujamos el lanzaguisantes
                     DrawCircle(
                         x + anchoCelda / 2,
                         y + altoCelda / 2,
@@ -195,6 +216,8 @@ void dibujarJardin(
                     break;
 
                 case CELDA_GIRASOL:
+
+                    // Dibujamos el girasol
                     DrawCircle(
                         x + anchoCelda / 2,
                         y + altoCelda / 2,
@@ -204,6 +227,8 @@ void dibujarJardin(
                     break;
 
                 case CELDA_NUEZ:
+
+                    // Dibujamos la nuez
                     DrawRectangle(
                         x + 15,
                         y + 15,
@@ -214,7 +239,8 @@ void dibujarJardin(
                     break;
 
                 case CELDA_GATOESPINOSO:
-                    // Dibujamos el gato espinoso.
+
+                    // Dibujamos el gato espinoso
                     DrawCircle(
                         x + anchoCelda / 2,
                         y + altoCelda / 2,
@@ -236,7 +262,8 @@ void dibujarJardin(
                     break;
 
                 case CELDA_LANZAGUISANTESFUEGO:
-                    // Dibujamos el lanzaguisantes de fuego.
+
+                    // Dibujamos el lanzaguisantes de fuego
                     DrawCircle(
                         x + anchoCelda / 2,
                         y + altoCelda / 2,
@@ -252,7 +279,8 @@ void dibujarJardin(
                     break;
 
                 case CELDA_NUEZREFORZADA:
-                    // Dibujamos la nuez reforzada.
+
+                    // Dibujamos la nuez reforzada
                     DrawRectangle(
                         x + 10,
                         y + 10,
@@ -272,17 +300,18 @@ void dibujarJardin(
         }
     }
 
-    // Dibujamos los zombies activos.
+    // Recorremos los zombies para dibujar los que siguen activos
     for(int i = 0; i < *cantidadZombies; i++){
 
         if(zombies[i].activo == 1){
 
+            // Calculamos la posicion del zombie en la ventana
             int x = zombies[i].columna * anchoCelda;
             int y = zombies[i].fila * altoCelda;
 
             if(zombies[i].tipoZombie == ZOMBIE_NORMAL){
 
-                // Dibujamos el zombie normal.
+                // Dibujamos el zombie normal
                 DrawCircle(
                     x + anchoCelda / 2,
                     y + altoCelda / 2,
@@ -292,7 +321,7 @@ void dibujarJardin(
             }
             else if(zombies[i].tipoZombie == ZOMBIE_BANDERA){
 
-                // Dibujamos el zombie abanderado.
+                // Dibujamos el zombie abanderado
                 DrawCircle(
                     x + anchoCelda / 2,
                     y + altoCelda / 2,
@@ -301,7 +330,8 @@ void dibujarJardin(
                 );
             }
             else if(zombies[i].tipoZombie == ZOMBIE_CONO){
-                // Dibujamos el zombie con cono.
+
+                // Dibujamos el zombie con cono
                 DrawCircle(
                     x + anchoCelda / 2,
                     y + altoCelda / 2,
@@ -311,7 +341,7 @@ void dibujarJardin(
             }
             else if(zombies[i].tipoZombie == ZOMBIE_CUBETA){
 
-                // Dibujamos el zombie con cubeta.
+                // Dibujamos el zombie con cubeta
                 DrawCircle(
                     x + anchoCelda / 2,
                     y + altoCelda / 2,
@@ -340,16 +370,19 @@ void dibujarJardin(
 }
 
 
-// Libera la memoria dinamica del jardin.
+// Libera la memoria dinamica utilizada por el jardin
 void liberarJardin(int **jardin, int *filas){
 
+    // Comprobamos que la matriz y la cantidad de filas existan
     if(jardin == NULL || filas == NULL){
         return;
     }
 
+    // Liberamos la memoria de cada fila
     for(int i = 0; i < *filas; i++){
         free(jardin[i]);
     }
 
+    // Liberamos la memoria reservada para las filas
     free(jardin);
 }
