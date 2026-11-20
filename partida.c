@@ -6,29 +6,35 @@
 #include "jardin.h"
 
 
-// Libera la memoria de una partida auxiliar
+// Libera la memoria utilizada por una partida temporal
 static void liberarPartidaTemporal(Partida *partida){
 
+    // Comprobamos que la partida exista
     if(partida == NULL){
         return;
     }
 
+    // Liberamos la memoria del jardin
     liberarJardin(partida->jardin, &partida->filas);
 
+    // Liberamos la memoria de los zombies y cortacespedes
     free(partida->zombies);
     free(partida->cortacesped);
 
+    // Reiniciamos la estructura para dejarla vacia
     *partida = (Partida){0};
 }
 
 
-// Guarda el estado actual de la partida
+// Guarda el estado actual de la partida en un archivo
 int guardarPartida(const char *nombreArchivo, Partida *partida){
 
+    // Comprobamos que los parametros sean validos
     if(nombreArchivo == NULL || partida == NULL){
         return 0;
     }
 
+    // Comprobamos que la partida tenga todos los datos necesarios
     if(partida->jardin == NULL ||
        partida->zombies == NULL ||
        partida->cortacesped == NULL ||
@@ -40,6 +46,7 @@ int guardarPartida(const char *nombreArchivo, Partida *partida){
         return 0;
     }
 
+    // Abrimos el archivo en modo escritura
     FILE *archivo = fopen(nombreArchivo, "w");
 
     if(archivo == NULL){
@@ -47,10 +54,10 @@ int guardarPartida(const char *nombreArchivo, Partida *partida){
         return 0;
     }
 
-    // Identificador y version del archivo
+    // Guardamos el identificador y la version del archivo
     fprintf(archivo, "PVZ_SAVE 1\n");
 
-    // Dimensiones del jardin
+    // Guardamos las dimensiones del jardin
     fprintf(
         archivo,
         "%d %d\n",
@@ -58,7 +65,7 @@ int guardarPartida(const char *nombreArchivo, Partida *partida){
         partida->columnas
     );
 
-    // Datos generales de la partida
+    // Guardamos los datos generales de la partida
     fprintf(
         archivo,
         "%d %d %d %d %d %d\n",
@@ -70,7 +77,7 @@ int guardarPartida(const char *nombreArchivo, Partida *partida){
         partida->juegoTerminado
     );
 
-    // Cantidad y capacidad de zombies
+    // Guardamos la cantidad y capacidad de zombies
     fprintf(
         archivo,
         "%d %d\n",
@@ -78,7 +85,7 @@ int guardarPartida(const char *nombreArchivo, Partida *partida){
         partida->capacidadZombies
     );
 
-    // Guardamos la matriz del jardin
+    // Guardamos todos los valores de la matriz del jardin
     for(int i = 0; i < partida->filas; i++){
 
         for(int j = 0; j < partida->columnas; j++){
@@ -105,9 +112,10 @@ int guardarPartida(const char *nombreArchivo, Partida *partida){
 
     fprintf(archivo, "\n");
 
-    // Guardamos todos los datos de cada zombie
+    // Guardamos los datos de cada zombie
     for(int i = 0; i < partida->cantidadZombies; i++){
 
+        // Obtenemos los datos del zombie actual
         Zombie z = partida->zombies[i];
 
         fprintf(
@@ -124,13 +132,15 @@ int guardarPartida(const char *nombreArchivo, Partida *partida){
         );
     }
 
-    // Comprobamos que la escritura haya sido correcta
+    // Comprobamos si ocurrio algun error durante la escritura
     int correcto = !ferror(archivo);
 
+    // Cerramos el archivo y comprobamos si se cerro correctamente
     if(fclose(archivo) != 0){
         correcto = 0;
     }
 
+    // Informamos si ocurrio un error al guardar
     if(!correcto){
         printf("Error al guardar la partida.\n");
         return 0;
@@ -141,16 +151,18 @@ int guardarPartida(const char *nombreArchivo, Partida *partida){
 }
 
 
-// Carga una partida desde un archivo 
+// Carga una partida guardada desde un archivo
 int cargarPartida(const char *nombreArchivo, Partida *partida){
 
+    // Comprobamos que los parametros sean validos
     if(nombreArchivo == NULL || partida == NULL){
         return 0;
     }
 
-    // Usamos una estructura temporal para evitar dejar la partida parcialmente cargada si ocurre un error
+    // Creamos una estructura temporal para cargar los datos
     Partida nueva = {0};
 
+    // Abrimos el archivo en modo lectura
     FILE *archivo = fopen(nombreArchivo, "r");
 
     if(archivo == NULL){
@@ -161,7 +173,7 @@ int cargarPartida(const char *nombreArchivo, Partida *partida){
     char identificador[16];
     int version;
 
-    // Comprobamos el identificador y la version
+    // Leemos y comprobamos el identificador y la version del archivo
     if(fscanf(archivo, "%15s %d", identificador, &version) != 2 ||
        identificador[0] == '\0' ||
        identificador[15] != '\0' ||
@@ -182,7 +194,7 @@ int cargarPartida(const char *nombreArchivo, Partida *partida){
         return 0;
     }
 
-    // Leemos las dimensiones
+    // Leemos las dimensiones del jardin
     if(fscanf(
         archivo,
         "%d %d",
@@ -197,7 +209,7 @@ int cargarPartida(const char *nombreArchivo, Partida *partida){
         return 0;
     }
 
-    // Comprobamos que las dimensiones no provoquen desbordamientos al reservar memoria
+    // Comprobamos que las dimensiones permitan reservar memoria
     if((size_t)nueva.filas > SIZE_MAX / sizeof(int *) ||
        (size_t)nueva.columnas > SIZE_MAX / sizeof(int)){
 
@@ -206,7 +218,7 @@ int cargarPartida(const char *nombreArchivo, Partida *partida){
         return 0;
     }
 
-    // Leemos los datos generales
+    // Leemos los datos generales de la partida
     if(fscanf(
         archivo,
         "%d %d %d %d %d %d",
@@ -236,6 +248,7 @@ int cargarPartida(const char *nombreArchivo, Partida *partida){
         return 0;
     }
 
+    // Comprobamos que la capacidad de zombies permita reservar memoria
     if((size_t)nueva.capacidadZombies > SIZE_MAX / sizeof(Zombie)){
 
         printf("Error: capacidad de zombies demasiado grande.\n");
@@ -243,8 +256,8 @@ int cargarPartida(const char *nombreArchivo, Partida *partida){
         return 0;
     }
 
-    // Reservamos memoria para el jardin
-    nueva.jardin = crearJardin( &nueva.filas, &nueva.columnas);
+    // Reservamos memoria para crear el jardin
+    nueva.jardin = crearJardin(&nueva.filas, &nueva.columnas);
 
     if(nueva.jardin == NULL){
         printf("Error al reservar memoria para el jardin.\n");
@@ -252,10 +265,11 @@ int cargarPartida(const char *nombreArchivo, Partida *partida){
         return 0;
     }
 
-    // Recuperamos los valores de la matriz
+    // Recuperamos los valores de la matriz del archivo
     for(int i = 0; i < nueva.filas; i++){
         for(int j = 0; j < nueva.columnas; j++){
 
+            // Leemos cada celda y comprobamos que su valor sea valido
             if(fscanf(
                 archivo,
                 "%d",
@@ -271,13 +285,14 @@ int cargarPartida(const char *nombreArchivo, Partida *partida){
         }
     }
 
-    // Reservamos memoria para los cortacespedes
+    // Comprobamos que se pueda reservar memoria para los cortacespedes
     if((size_t)nueva.filas > SIZE_MAX / sizeof(int)){
         fclose(archivo);
         liberarPartidaTemporal(&nueva);
         return 0;
     }
 
+    // Reservamos memoria para los cortacespedes
     nueva.cortacesped = malloc(
         nueva.filas * sizeof(int)
     );
@@ -291,9 +306,10 @@ int cargarPartida(const char *nombreArchivo, Partida *partida){
         return 0;
     }
 
-    // Recuperamos el estado de los cortacespedes
+    // Recuperamos el estado de cada cortacesped
     for(int i = 0; i < nueva.filas; i++){
 
+        // Leemos el valor y comprobamos que sea 0 o 1
         if(fscanf(
             archivo,
             "%d",
@@ -308,8 +324,8 @@ int cargarPartida(const char *nombreArchivo, Partida *partida){
         }
     }
 
-    // Reservamos memoria para los zombies
-    nueva.zombies = malloc( nueva.capacidadZombies * sizeof(Zombie));
+    // Reservamos memoria para almacenar los zombies
+    nueva.zombies = malloc(nueva.capacidadZombies * sizeof(Zombie));
 
     if(nueva.zombies == NULL){
 
@@ -320,11 +336,13 @@ int cargarPartida(const char *nombreArchivo, Partida *partida){
         return 0;
     }
 
-    // Recuperamos todos los campos de cada zombie
+    // Recuperamos los datos de cada zombie
     for(int i = 0; i < nueva.cantidadZombies; i++){
 
+        // Accedemos al zombie actual
         Zombie *z = &nueva.zombies[i];
 
+        // Leemos todos los campos del zombie
         if(fscanf(
             archivo,
             "%d %d %d %d %d %d %d %d",
@@ -345,7 +363,7 @@ int cargarPartida(const char *nombreArchivo, Partida *partida){
             return 0;
         }
 
-        // Validamos la posicion y el estado del zombie
+        // Comprobamos que la posicion y el estado del zombie sean validos
         if(z->fila < 0 ||
            z->fila >= nueva.filas ||
            z->columna < 0 ||
@@ -362,7 +380,7 @@ int cargarPartida(const char *nombreArchivo, Partida *partida){
         }
     }
 
-    // Comprobamos que no existan datos adicionales
+    // Comprobamos que el archivo no tenga datos adicionales
     char datoExtra[2];
 
     if(fscanf(archivo, "%1s", datoExtra) == 1){
@@ -374,9 +392,10 @@ int cargarPartida(const char *nombreArchivo, Partida *partida){
         return 0;
     }
 
+    // Cerramos el archivo despues de terminar la lectura
     fclose(archivo);
 
-    // La carga fue exitosa, transferimos los datos
+    // Si la carga fue correcta, transferimos los datos a la partida original
     *partida = nueva;
 
     printf("Partida cargada correctamente.\n");
