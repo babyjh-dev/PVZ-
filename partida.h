@@ -3,10 +3,10 @@
 
 #include "estructuras.h"
 
-/* Guarda el estado actual de una partida en un archivo. */
+// Guarda el estado actual de una partida en un archivo
 int guardarPartida(const char *nombreArchivo, Partida *partida);
 
-/* Carga una partida desde un archivo. */
+//Carga una partida desde un archivo
 int cargarPartida(const char *nombreArchivo, Partida *partida);
 
 #endif
